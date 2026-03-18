@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <video autoplay muted loop id="bg-video">
+        <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <div class="main-container">
+        <div class="side-panel left-panel">
+            <div class="info-card">
+                <div id="clock">00:00:00</div>
+                <div id="date">2026/03/18</div>
+                <div id="weather">載入氣溫中...</div>
+            </div>
+            <div class="changelog">
+                <h3>更新日誌</h3>
+                <ul>
+                    <li>v1.0 介面初步整合</li>
+                    <li>新增背景影片功能</li>
+                    <li>整合 Google 搜尋引擎</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <img src="sus.png" alt="Logo" class="search-logo">
+            <div class="search-box">
+                <script async src="https://cse.google.com/cse.js?cx=1193b39a9705e4e98"></script>
+                <div class="gcse-search"></div>
+            </div>
+        </div>
+
+        <div class="side-panel right-panel">
+            <h3>影片列表</h3>
+            <div class="video-list">
+                <div class="video-item">影片名稱 1</div>
+                <div class="video-item">影片名稱 2</div>
+                <div class="video-item">影片名稱 3</div>
+                <div class="video-item">影片名稱 4</div>
+                <div class="video-item">影片名稱 5</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
