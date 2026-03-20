@@ -53,7 +53,7 @@ getRealTimeWeather();
 
 // --- 4. 音樂播放器邏輯 ---
 let player;
-const playlist = ['1un8S_21U8w', 'BlQPjLFcwDM', 'fH_Pst9q294']; // 可更換 ID
+const playlist = ['C-CYwNz3z8w', '8Cm-7oCq9HA', 'BI9Ue6JwJic', 'OSeSYGiDf9w', 'kqj7b59D85Y']; // 可更換 ID
 let currentTrack = 0;
 
 function onYouTubeIframeAPIReady() {
