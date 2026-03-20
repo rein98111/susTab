@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sus Tab</title>
 <style>
-    /* --- 核心佈局與背景 --- */
+    /* --- 核心佈局 --- */
     body, html { margin: 0; padding: 0; height: 100%; color: white; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
     #bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; object-fit: cover; filter: brightness(0.65); top: 0px; }
     .main-container { display: flex; justify-content: space-between; align-items: flex-start; height: 100vh; padding: 30px 40px; box-sizing: border-box; }
@@ -17,30 +17,36 @@
     #weather { font-size: 1.2rem; color: #00d4ff; margin-bottom: 25px; font-weight: bold; }
     
     .changelog { height: 25%; overflow-y: auto; margin-bottom: 15px; }
-    .changelog h3 { font-size: 1.2rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
-    .changelog ul { padding-left: 20px; font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9); }
+    .changelog h3 { font-size: 1.1rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    .changelog ul { padding-left: 20px; font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.9); margin: 10px 0; }
 
-    /* --- 常用網站 (圖示化) --- */
+    /* --- 常用網站 --- */
     .quick-links { flex-grow: 1; overflow-y: auto; }
-    .quick-links h3 { font-size: 1.2rem; margin-bottom: 15px; }
-    .links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    .links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 10px; }
     .link-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; transition: 0.3s; }
-    .link-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 12px; margin-bottom: 5px; transition: 0.3s; object-fit: contain; }
-    .link-item span { font-size: 0.7rem; color: #ccc; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .link-item:hover .link-icon { background: rgba(0, 212, 255, 0.3); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,212,255,0.3); }
+    .link-icon { width: 38px; height: 38px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 12px; margin-bottom: 5px; object-fit: contain; transition: 0.3s; }
+    .link-item span { font-size: 0.65rem; color: #ccc; max-width: 55px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .link-item:hover .link-icon { background: rgba(0, 212, 255, 0.3); transform: translateY(-3px); }
 
-    /* --- 中間搜尋區 --- */
+    /* --- 中間搜尋 --- */
     .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 40px; padding-top: 10vh; }
-    .search-logo { width: 260px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); }
-    .custom-search-input { width: 100%; max-width: 620px; padding: 15px 25px; font-size: 1.2rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.9); outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+    .search-logo { width: 240px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); }
+    .custom-search-input { width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.95); outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); color: #333; }
 
-    /* --- 音樂播放器 (滑入式修正版) --- */
+    /* --- 推薦影片 (修正歪掉問題) --- */
+    .video-list-container { flex-grow: 1; overflow-y: auto; }
+    .video-item { padding: 8px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
+    .video-item:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(0, 212, 255, 0.3); }
+    .video-item img { width: 100%; border-radius: 8px; aspect-ratio: 16/9; object-fit: cover; display: block; margin-bottom: 8px; }
+    .video-title { font-size: 0.85rem; line-height: 1.3; color: #eee; height: 2.6rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    /* --- 音樂播放器 --- */
     #music-bar {
         position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-        width: 500px; height: 80px; background: rgba(15, 15, 15, 0.95); 
+        width: 520px; height: 80px; background: rgba(15, 15, 15, 0.95); 
         backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
         border-radius: 40px 40px 0 0; display: flex; align-items: center; 
-        padding: 0 35px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
+        padding: 0 30px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
     }
     #music-bar.active { bottom: 0; }
     .music-btn-toggle {
@@ -49,20 +55,18 @@
         padding: 10px 25px; border-radius: 25px; cursor: pointer; z-index: 1001;
         font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    
-    .music-info { flex: 1; margin-right: 15px; }
-    .music-title { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #00d4ff; }
-    .music-controls button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin: 0 10px; transition: 0.3s; }
+    .music-info { flex: 1; overflow: hidden; margin-right: 15px; }
+    .music-title { font-size: 0.9rem; color: #00d4ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .music-controls button { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; margin: 0 8px; transition: 0.2s; }
     .music-controls button:hover { color: #00d4ff; transform: scale(1.1); }
     
     #yt-audio-player { position: absolute; left: -9999px; }
 
-    /* --- 影片彈窗 --- */
-    .video-item { padding: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; }
-    #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1100; justify-content: center; align-items: center; }
-    .modal-content { position: relative; width: 85%; max-width: 1000px; aspect-ratio: 16/9; }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+    /* --- 彈窗 --- */
+    #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
+    .modal-content { position: relative; width: 80%; max-width: 900px; aspect-ratio: 16/9; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -73,15 +77,15 @@
         <div class="side-panel">
             <div id="clock">00:00:00</div>
             <div id="date">載入中...</div>
-            <div id="weather">正在獲取氣溫...</div>
+            <div id="weather">正在獲取...</div>
             
             <div class="changelog">
                 <h3>更新日誌</h3>
                 <ul>
-                    <li>修復音樂播放器自動播放問題</li>
-                    <li>合併為一體化單檔案結構</li>
-                    <li>優化按鈕遮擋與互動邏輯</li>
-                    <li>自動動態切換天氣 Emoji</li>
+                    <li>修復音樂播放器邏輯</li>
+                    <li>修正右側縮圖排版比例</li>
+                    <li>優化搜尋框與字體清晰度</li>
+                    <li>自動過濾無效 Favicon</li>
                 </ul>
             </div>
 
@@ -93,7 +97,7 @@
 
         <div class="center-panel">
             <img src="images/susFries.png" alt="Logo" class="search-logo">
-            <form action="https://www.google.com/search" method="GET" style="width:100%; max-width:620px;">
+            <form action="https://www.google.com/search" method="GET" style="width:100%; max-width:600px;">
                 <input type="text" name="q" class="custom-search-input" placeholder="Search Google..." autocomplete="off">
             </form>
         </div>
@@ -103,15 +107,15 @@
             <div class="video-list-container">
                 <div class="video-item" onclick="playVideo('OTVPmjPKafw')">
                     <img src="https://img.youtube.com/vi/OTVPmjPKafw/mqdefault.jpg">
-                    <div class="video-title">Keyboard + Mouse ASMR</div>
+                    <div class="video-title">Keyboard + Mouse ASMR Sounds</div>
                 </div>
                 <div class="video-item" onclick="playVideo('3MTOKXjfdBU')">
                     <img src="https://img.youtube.com/vi/3MTOKXjfdBU/mqdefault.jpg">
-                    <div class="video-title">亞太盃2026 Tryout</div>
+                    <div class="video-title">亞太盃2026 Tryout 精華回顧</div>
                 </div>
                 <div class="video-item" onclick="playVideo('BlQPjLFcwDM')">
                     <img src="https://img.youtube.com/vi/BlQPjLFcwDM/mqdefault.jpg">
-                    <div class="video-title">Ado - Show | osu!</div>
+                    <div class="video-title">Ado - Show | osu! Gameplay</div>
                 </div>
             </div>
         </div>
@@ -119,9 +123,7 @@
 
     <button class="music-btn-toggle" onclick="toggleMusicBar()">🎵 播放音樂</button>
     <div id="music-bar">
-        <div class="music-info">
-            <div class="music-title" id="music-title">播放器載入中...</div>
-        </div>
+        <div class="music-info"><div class="music-title" id="music-title">播放器載入中...</div></div>
         <div class="music-controls">
             <button onclick="playMusic()">▶</button>
             <button onclick="pauseMusic()">⏸</button>
@@ -139,7 +141,6 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        // --- 1. 時間功能 ---
         function updateTime() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
@@ -147,7 +148,6 @@
         }
         setInterval(updateTime, 1000); updateTime();
 
-        // --- 2. 常用網站 ---
         const myLinks = [
             { name: 'YouTube', url: 'https://www.youtube.com' },
             { name: 'Twitch', url: 'https://www.twitch.tv' },
@@ -163,11 +163,9 @@
         const linksGrid = document.getElementById('links-grid');
         myLinks.forEach(link => {
             const domain = new URL(link.url).hostname;
-            const iconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-            linksGrid.innerHTML += `<a href="${link.url}" class="link-item" target="_blank"><img src="${iconUrl}" class="link-icon"><span>${link.name}</span></a>`;
+            linksGrid.innerHTML += `<a href="${link.url}" class="link-item" target="_blank"><img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" class="link-icon"><span>${link.name}</span></a>`;
         });
 
-        // --- 3. 天氣 ---
         async function getRealTimeWeather() {
             try {
                 const response = await fetch('https://www.7timer.info/bin/astro.php?lon=121.2&lat=24.9&ac=0&unit=metric&output=json');
@@ -180,67 +178,41 @@
         }
         getRealTimeWeather();
 
-        // --- 4. 音樂播放器核心 (修正版) ---
-        let player;
-        let playerReady = false;
+        let player, playerReady = false;
         const playlist = ['C-CYwNz3z8w', '8Cm-7oCq9HA', 'BI9Ue6JwJic', 'OSeSYGiDf9w', 'kqj7b59D85Y'];
         let currentTrack = 0;
 
-        // API 自動呼叫
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('yt-audio-player', {
-                height: '0', width: '0',
-                videoId: playlist[currentTrack],
-                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1 },
+                height: '0', width: '0', videoId: playlist[currentTrack],
+                playerVars: { 'autoplay': 0, 'controls': 0 },
                 events: {
-                    'onReady': (e) => { 
-                        playerReady = true;
-                        e.target.setVolume(50);
-                        document.getElementById('music-title').innerText = "播放器就緒";
-                    },
+                    'onReady': (e) => { playerReady = true; e.target.setVolume(50); document.getElementById('music-title').innerText = "播放器就緒"; },
                     'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextMusic(); }
                 }
             });
         }
 
-        function playMusic() {
-            if (playerReady) {
-                player.playVideo();
-                document.getElementById('music-title').innerText = "BGM 播放中...";
-            }
-        }
-        function pauseMusic() { if (playerReady) player.pauseVideo(); }
-        function nextMusic() {
-            if (playerReady) {
-                currentTrack = (currentTrack + 1) % playlist.length;
-                player.loadVideoById(playlist[currentTrack]);
-            }
-        }
+        function playMusic() { if(playerReady) { player.playVideo(); document.getElementById('music-title').innerText = "BGM 播放中..."; } }
+        function pauseMusic() { if(playerReady) player.pauseVideo(); }
+        function nextMusic() { if(playerReady) { currentTrack = (currentTrack + 1) % playlist.length; player.loadVideoById(playlist[currentTrack]); } }
 
         function toggleMusicBar() {
             const bar = document.getElementById('music-bar');
             const btn = document.querySelector('.music-btn-toggle');
             bar.classList.toggle('active');
-            
             if (bar.classList.contains('active')) {
-                btn.innerText = "❌ 關閉面板";
-                btn.style.bottom = "90px"; 
-                playMusic(); // 使用者主動點擊按鈕，此時呼叫播放 100% 成功
+                btn.innerText = "❌ 關閉面板"; btn.style.bottom = "90px"; playMusic();
             } else {
-                btn.innerText = "🎵 播放音樂";
-                btn.style.bottom = "30px";
+                btn.innerText = "🎵 播放音樂"; btn.style.bottom = "30px";
             }
         }
 
-        // --- 5. 影片彈窗 ---
         function playVideo(id) {
             document.getElementById('video-player').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
             document.getElementById('video-modal').style.display = 'flex';
         }
-        function closeVideo() {
-            document.getElementById('video-modal').style.display = 'none';
-            document.getElementById('video-player').src = '';
-        }
+        function closeVideo() { document.getElementById('video-modal').style.display = 'none'; document.getElementById('video-player').src = ''; }
     </script>
 </body>
 </html>
