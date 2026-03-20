@@ -33,7 +33,7 @@
     .search-logo { width: 240px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); }
     .custom-search-input { width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.95); outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); color: #333; }
 
-    /* --- 推薦影片 (修正歪掉問題) --- */
+    /* --- 推薦影片 --- */
     .video-list-container { flex-grow: 1; overflow-y: auto; }
     .video-item { padding: 8px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
     .video-item:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(0, 212, 255, 0.3); }
@@ -65,8 +65,6 @@
     /* --- 彈窗 --- */
     #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
     .modal-content { position: relative; width: 80%; max-width: 900px; aspect-ratio: 16/9; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -82,7 +80,7 @@
             <div class="changelog">
                 <h3>更新日誌</h3>
                 <ul>
-                    <li>修復音樂播放器邏輯</li>
+                    <li>修復音樂播放器 API 衝突</li>
                     <li>修正右側縮圖排版比例</li>
                     <li>優化搜尋框與字體清晰度</li>
                     <li>自動過濾無效 Favicon</li>
@@ -141,6 +139,7 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
+        // --- 1. 時間 ---
         function updateTime() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
@@ -148,6 +147,7 @@
         }
         setInterval(updateTime, 1000); updateTime();
 
+        // --- 2. 常用網站 ---
         const myLinks = [
             { name: 'YouTube', url: 'https://www.youtube.com' },
             { name: 'Twitch', url: 'https://www.twitch.tv' },
@@ -166,6 +166,7 @@
             linksGrid.innerHTML += `<a href="${link.url}" class="link-item" target="_blank"><img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" class="link-icon"><span>${link.name}</span></a>`;
         });
 
+        // --- 3. 天氣 ---
         async function getRealTimeWeather() {
             try {
                 const response = await fetch('https://www.7timer.info/bin/astro.php?lon=121.2&lat=24.9&ac=0&unit=metric&output=json');
@@ -178,41 +179,64 @@
         }
         getRealTimeWeather();
 
+        // --- 4. 音樂播放器修復核心 ---
         let player, playerReady = false;
         const playlist = ['C-CYwNz3z8w', '8Cm-7oCq9HA', 'BI9Ue6JwJic', 'OSeSYGiDf9w', 'kqj7b59D85Y'];
         let currentTrack = 0;
 
-        function onYouTubeIframeAPIReady() {
+        // 這個函式必須在全域作用域，YouTube API 才能找到它
+        window.onYouTubeIframeAPIReady = function() {
             player = new YT.Player('yt-audio-player', {
-                height: '0', width: '0', videoId: playlist[currentTrack],
-                playerVars: { 'autoplay': 0, 'controls': 0 },
+                height: '0', width: '0', 
+                videoId: playlist[currentTrack],
+                playerVars: { 'autoplay': 0, 'controls': 0, 'enablejsapi': 1 },
                 events: {
-                    'onReady': (e) => { playerReady = true; e.target.setVolume(50); document.getElementById('music-title').innerText = "播放器就緒"; },
+                    'onReady': (e) => { 
+                        playerReady = true; 
+                        e.target.setVolume(50); 
+                        document.getElementById('music-title').innerText = "播放器就緒"; 
+                    },
                     'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextMusic(); }
                 }
             });
-        }
+        };
 
-        function playMusic() { if(playerReady) { player.playVideo(); document.getElementById('music-title').innerText = "BGM 播放中..."; } }
-        function pauseMusic() { if(playerReady) player.pauseVideo(); }
-        function nextMusic() { if(playerReady) { currentTrack = (currentTrack + 1) % playlist.length; player.loadVideoById(playlist[currentTrack]); } }
+        function playMusic() { 
+            if(playerReady && player && typeof player.playVideo === 'function') { 
+                player.playVideo(); 
+                document.getElementById('music-title').innerText = "BGM 播放中..."; 
+            } 
+        }
+        function pauseMusic() { if(playerReady && player) player.pauseVideo(); }
+        function nextMusic() { 
+            if(playerReady && player) { 
+                currentTrack = (currentTrack + 1) % playlist.length; 
+                player.loadVideoById(playlist[currentTrack]); 
+            } 
+        }
 
         function toggleMusicBar() {
             const bar = document.getElementById('music-bar');
             const btn = document.querySelector('.music-btn-toggle');
             bar.classList.toggle('active');
             if (bar.classList.contains('active')) {
-                btn.innerText = "❌ 關閉面板"; btn.style.bottom = "90px"; playMusic();
+                btn.innerText = "❌ 關閉面板"; btn.style.bottom = "90px"; 
+                // 延遲一點點播放，確保 API 響應
+                setTimeout(playMusic, 100);
             } else {
                 btn.innerText = "🎵 播放音樂"; btn.style.bottom = "30px";
             }
         }
 
+        // --- 5. 影片彈窗 ---
         function playVideo(id) {
             document.getElementById('video-player').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
             document.getElementById('video-modal').style.display = 'flex';
         }
-        function closeVideo() { document.getElementById('video-modal').style.display = 'none'; document.getElementById('video-player').src = ''; }
+        function closeVideo() { 
+            document.getElementById('video-modal').style.display = 'none'; 
+            document.getElementById('video-player').src = ''; 
+        }
     </script>
 </body>
 </html>
