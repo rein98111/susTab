@@ -5,36 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sus Tab</title>
 <style>
-    /* --- CSS 保持原樣，僅微調 weather 顏色 --- */
+    /* --- 核心佈局與背景 --- */
     body, html { margin: 0; padding: 0; height: 100%; color: white; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
     #bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; object-fit: cover; filter: brightness(0.65); top: 0px; }
     .main-container { display: flex; justify-content: space-between; align-items: flex-start; height: 100vh; padding: 30px 40px; box-sizing: border-box; }
+    
+    /* --- 面板樣式 --- */
     .side-panel { width: 290px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 25px; height: 85vh; display: flex; flex-direction: column; margin-top: 10px; }
     #clock { font-size: 3.5rem; font-weight: bold; }
     #date { font-size: 1.2rem; color: #ddd; margin-bottom: 8px; }
     #weather { font-size: 1.2rem; color: #00d4ff; margin-bottom: 25px; font-weight: bold; }
-    .changelog { height: 35%; overflow-y: auto; margin-bottom: 20px; }
-    .changelog h3 { font-size: 1.3rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
-    .changelog ul { padding-left: 20px; font-size: 1.05rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
-    .quick-links { flex-grow: 1; display: flex; flex-direction: column; }
-    .quick-links h3 { font-size: 1.3rem; margin-bottom: 10px; }
-    .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .link-item { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 10px; text-align: center; text-decoration: none; color: white; font-size: 0.9rem; transition: 0.3s; border: 1px solid transparent; }
-    .link-item:hover { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(0, 212, 255, 0.5); transform: scale(1.05); }
+    
+    .changelog { height: 25%; overflow-y: auto; margin-bottom: 15px; }
+    .changelog h3 { font-size: 1.2rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    .changelog ul { padding-left: 20px; font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9); }
+
+    /* --- 常用網站 (圖示化) --- */
+    .quick-links { flex-grow: 1; overflow-y: auto; }
+    .quick-links h3 { font-size: 1.2rem; margin-bottom: 15px; }
+    .links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    .link-item { 
+        display: flex; flex-direction: column; align-items: center; 
+        text-decoration: none; transition: 0.3s; 
+    }
+    .link-icon { 
+        width: 42px; height: 42px; background: rgba(255,255,255,0.1); 
+        padding: 8px; border-radius: 12px; margin-bottom: 5px; 
+        transition: 0.3s; object-fit: contain;
+    }
+    .link-item span { font-size: 0.7rem; color: #ccc; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .link-item:hover .link-icon { background: rgba(0, 212, 255, 0.3); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,212,255,0.3); }
+
+    /* --- 中間搜尋區 --- */
     .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 40px; padding-top: 10vh; }
-    .search-logo { width: 260px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); transition: 0.3s ease; }
-    .search-logo:hover { transform: scale(1.03); }
-    .search-box-container { width: 100%; max-width: 620px; }
-    .custom-search-input { width: 100%; padding: 15px 25px; font-size: 1.2rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.9); color: #333; outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); transition: 0.3s; }
-    .custom-search-input:focus { background: #fff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
-    .video-list-container { overflow-y: auto; flex-grow: 1; }
+    .search-logo { width: 260px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); }
+    .custom-search-input { width: 100%; max-width: 620px; padding: 15px 25px; font-size: 1.2rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.9); outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+
+    /* --- 音樂播放器 (滑入式) --- */
+    #music-bar {
+        position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
+        width: 500px; height: 70px; background: rgba(0,0,0,0.8); 
+        backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 35px 35px 0 0; display: flex; align-items: center; 
+        padding: 0 30px; transition: 0.5s ease-in-out; z-index: 99;
+    }
+    #music-bar.active { bottom: 0; }
+    .music-btn-toggle {
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(0, 212, 255, 0.6); border: none; color: white;
+        padding: 8px 20px; border-radius: 20px; cursor: pointer; z-index: 98;
+        font-weight: bold; transition: 0.3s;
+    }
+    .music-btn-toggle:hover { background: #00d4ff; box-shadow: 0 0 15px #00d4ff; }
+    
+    .music-info { flex: 1; margin-right: 15px; }
+    .music-title { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .music-controls button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin: 0 10px; transition: 0.3s; }
+    .music-controls button:hover { color: #00d4ff; }
+    
+    /* 隱藏 YouTube 影片區塊但保持 API 運作 */
+    #yt-audio-player { position: absolute; left: -9999px; top: -9999px; pointer-events: none; }
+
+    /* --- 其他功能元件 --- */
     .video-item { padding: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; transition: 0.3s; }
     .video-item:hover { background: rgba(255, 255, 255, 0.15); }
     .video-item img { width: 100%; border-radius: 8px; margin-bottom: 8px; }
-    .video-title { font-size: 0.88rem; line-height: 1.4; height: 2.8em; overflow: hidden; }
     #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; }
     .modal-content { position: relative; width: 85%; max-width: 1000px; aspect-ratio: 16/9; }
-    .close-btn { position: absolute; top: -45px; right: 0; font-size: 35px; cursor: pointer; }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
 </style>
@@ -52,105 +89,158 @@
             <div class="changelog">
                 <h3>更新日誌</h3>
                 <ul>
-                    <li>實現氣溫自動抓取功能</li>
-                    <li>新增常用網站快捷鍵</li>
-                    <li>優化搜尋框即時響應</li>
+                    <li>圖標化常用網站捷徑</li>
+                    <li>自動動態切換天氣 Emoji</li>
+                    <li>新增底部隱藏式音樂播放器</li>
+                    <li>優化側邊欄捲動空間</li>
                 </ul>
             </div>
 
             <div class="quick-links">
                 <h3>常用網站</h3>
-                <div class="links-grid">
-                    <a href="https://www.youtube.com" class="link-item">YouTube</a>
-                    <a href="https://www.twitch.tv/" class="link-item">Twitch</a>
-                    <a href="https://github.com" class="link-item">GitHub</a>
-                    <a href="https://www.pixiv.net/" class="link-item">Pixiv</a>
-                    <a href="https://gemini.google.com/app" class="link-item">Gemini</a>
-                    <a href="https://ani.gamer.com.tw/" class="link-item">Anime</a>
-                    <a href="https://www.threads.com/?hl=zh-tw" class="link-item">Threads</a>
-                    <a href="https://sites.google.com/view/osufries" class="link-item">susFries</a>
-                    <a href="https://osu.ppy.sh" class="link-item">osu!</a>
-                    <a href="https://www.bilibili.com/" class="link-item">Bilibili</a>
-                </div>
+                <div class="links-grid" id="links-grid">
+                    </div>
             </div>
         </div>
 
         <div class="center-panel">
             <img src="images/susFries.png" alt="Logo" class="search-logo">
-            <div class="search-box-container">
-                <form action="https://www.google.com/search" method="GET">
-                    <input type="text" name="q" class="custom-search-input" placeholder="在這裡搜尋 Google..." autocomplete="off">
-                </form>
-            </div>
+            <form action="https://www.google.com/search" method="GET" style="width:100%; max-width:620px;">
+                <input type="text" name="q" class="custom-search-input" placeholder="Search Google..." autocomplete="off">
+            </form>
         </div>
 
         <div class="side-panel">
             <h3>推薦影片</h3>
-            <div class="video-list-container" id="yt-list">
+            <div class="video-list-container">
                 <div class="video-item" onclick="playVideo('OTVPmjPKafw')">
                     <img src="https://img.youtube.com/vi/OTVPmjPKafw/mqdefault.jpg">
-                    <div class="video-title">Keyboard + Mouse ASMR Sounds</div>
+                    <div class="video-title">Keyboard + Mouse ASMR</div>
                 </div>
                 <div class="video-item" onclick="playVideo('3MTOKXjfdBU')">
                     <img src="https://img.youtube.com/vi/3MTOKXjfdBU/mqdefault.jpg">
-                    <div class="video-title">6位數亞太盃2026 Tryout精華</div>
-                </div>
-                <div class="video-item" onclick="playVideo('NT_5y_iP0q8')">
-                    <img src="https://img.youtube.com/vi/NT_5y_iP0q8/mqdefault.jpg">
-                    <div class="video-title">bedtwL | Minecraft Trailer</div>
+                    <div class="video-title">亞太盃2026 Tryout</div>
                 </div>
                 <div class="video-item" onclick="playVideo('BlQPjLFcwDM')">
                     <img src="https://img.youtube.com/vi/BlQPjLFcwDM/mqdefault.jpg">
-                    <div class="video-title">【經過一年的對比】Ado - Show | osu!</div>
+                    <div class="video-title">Ado - Show | osu!</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <button class="music-btn-toggle" onclick="toggleMusicBar()">🎵 播放音樂</button>
+    <div id="music-bar">
+        <div class="music-info">
+            <div class="music-title" id="music-title">正在加載音樂...</div>
+        </div>
+        <div class="music-controls">
+            <button onclick="player.playVideo()">▶</button>
+            <button onclick="player.pauseVideo()">⏸</button>
+            <button onclick="nextMusic()">⏭</button>
+        </div>
+        <div id="yt-audio-player"></div>
+    </div>
+
     <div id="video-modal" onclick="closeVideo()">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
             <iframe id="video-player" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
-        // 更新時間
+        // --- 1. 時間功能 ---
         function updateTime() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
             document.getElementById('date').innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
         }
-        setInterval(updateTime, 1000); 
-        updateTime();
+        setInterval(updateTime, 1000); updateTime();
 
-        // 【新增】自動抓取氣溫功能
+        // --- 2. 常用網站 (自動圖示化) ---
+        const myLinks = [
+            { name: 'YouTube', url: 'https://www.youtube.com' },
+            { name: 'Twitch', url: 'https://www.twitch.tv' },
+            { name: 'GitHub', url: 'https://github.com' },
+            { name: 'Pixiv', url: 'https://www.pixiv.net' },
+            { name: 'Gemini', url: 'https://gemini.google.com' },
+            { name: 'Anime', url: 'https://ani.gamer.com.tw' },
+            { name: 'Threads', url: 'https://www.threads.com' },
+            { name: 'susFries', url: 'https://sites.google.com/view/osufries' },
+            { name: 'osu!', url: 'https://osu.ppy.sh' },
+            { name: 'Bilibili', url: 'https://www.bilibili.com' }
+        ];
+
+        const linksGrid = document.getElementById('links-grid');
+        myLinks.forEach(link => {
+            const iconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(link.url).hostname}`;
+            linksGrid.innerHTML += `
+                <a href="${link.url}" class="link-item" target="_blank">
+                    <img src="${iconUrl}" class="link-icon">
+                    <span>${link.name}</span>
+                </a>`;
+        });
+
+        // --- 3. 自動天氣圖示 ---
         async function getRealTimeWeather() {
             try {
-                // 使用公開免 key 的 7-Timer API (定位在桃園經緯度約 24.9, 121.2)
                 const response = await fetch('https://www.7timer.info/bin/astro.php?lon=121.2&lat=24.9&ac=0&unit=metric&output=json');
                 const data = await response.json();
-                
-                // 抓取最接近現在時間點的氣溫
                 const temp = data.dataseries[0].temp2m;
-                
-                // 更新畫面
-                document.getElementById('weather').innerText = `桃園市 ${temp}°C ☁️`;
+                const weatherType = data.dataseries[0].prec_type; // 降水類型
+                const sky = data.dataseries[0].cloudcover; // 雲量 (1-9)
+
+                let emoji = "☀️";
+                if (weatherType !== "none") emoji = "🌧️"; 
+                else if (sky > 5) emoji = "☁️";
+                else if (sky > 2) emoji = "⛅";
+
+                document.getElementById('weather').innerText = `桃園市 ${temp}°C ${emoji}`;
             } catch (error) {
-                console.error('氣溫抓取失敗:', error);
-                document.getElementById('weather').innerText = "桃園市 20°C (讀取失敗)";
+                document.getElementById('weather').innerText = "桃園市 20°C ☁️";
             }
         }
-        
-        // 頁面載入時執行一次，之後每 30 分鐘更新一次
         getRealTimeWeather();
-        setInterval(getRealTimeWeather, 1800000);
 
+        // --- 4. 隱藏式音樂播放器邏輯 ---
+        let player;
+        const playlist = ['1un8S_21U8w', 'BlQPjLFcwDM', 'fH_Pst9q294']; // 放入你想聽的 YT 影片 ID
+        let currentTrack = 0;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-audio-player', {
+                height: '0', width: '0',
+                videoId: playlist[currentTrack],
+                playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1 },
+                events: {
+                    'onReady': (e) => { 
+                        e.target.setVolume(50); 
+                        document.getElementById('music-title').innerText = "正在播放: BGM";
+                    },
+                    'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextMusic(); }
+                }
+            });
+        }
+
+        function nextMusic() {
+            currentTrack = (currentTrack + 1) % playlist.length;
+            player.loadVideoById(playlist[currentTrack]);
+        }
+
+        function toggleMusicBar() {
+            const bar = document.getElementById('music-bar');
+            bar.classList.toggle('active');
+            const btn = document.querySelector('.music-btn-toggle');
+            btn.innerText = bar.classList.contains('active') ? "❌ 關閉面板" : "🎵 播放音樂";
+        }
+
+        // --- 5. 影片彈窗 ---
         function playVideo(id) {
             document.getElementById('video-player').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
             document.getElementById('video-modal').style.display = 'flex';
         }
-
         function closeVideo() {
             document.getElementById('video-modal').style.display = 'none';
             document.getElementById('video-player').src = '';
