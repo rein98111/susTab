@@ -1,42 +1,62 @@
 /* 核心佈局 */
 body, html { margin: 0; padding: 0; height: 100%; color: white; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
-#bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; object-fit: cover; filter: brightness(0.65); top: 0px; }
-.main-container { display: flex; justify-content: space-between; align-items: flex-start; height: 100vh; padding: 30px 40px; box-sizing: border-box; }
+#bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; object-fit: cover; filter: brightness(0.65); }
 
-/* 面板樣式 */
-.side-panel { width: 290px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 25px; height: 85vh; display: flex; flex-direction: column; margin-top: 10px; }
-#clock { font-size: 3.5rem; font-weight: bold; }
-#date { font-size: 1.2rem; color: #ddd; margin-bottom: 8px; }
-#weather { font-size: 1.2rem; color: #00d4ff; margin-bottom: 25px; font-weight: bold; }
+/* 主容器：使用 flex 讓兩側面板自動撐開 */
+.main-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; /* 改為置中對齊，排版更穩 */
+    height: 100vh; 
+    padding: 0 40px; 
+    box-sizing: border-box; 
+}
 
-.changelog { height: 25%; overflow-y: auto; margin-bottom: 15px; }
-.changelog h3 { font-size: 1.2rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
-.changelog ul { padding-left: 20px; font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9); }
+/* 面板樣式：固定高度避免位移 */
+.side-panel { 
+    width: 290px; 
+    background: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(12px); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 20px; 
+    padding: 25px; 
+    height: 80vh; 
+    display: flex; 
+    flex-direction: column; 
+}
 
-/* 常用網站圖示 */
-.quick-links { flex-grow: 1; overflow-y: auto; }
-.links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+#clock { font-size: 3.2rem; font-weight: bold; }
+#date { font-size: 1.1rem; color: #ddd; margin-bottom: 5px; }
+#weather { font-size: 1.1rem; color: #00d4ff; margin-bottom: 20px; font-weight: bold; }
+
+/* 常用網站：限制高度並允許滾動 */
+.quick-links { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
+.links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .link-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; transition: 0.3s; }
-.link-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 12px; margin-bottom: 5px; object-fit: contain; }
-.link-item span { font-size: 0.7rem; color: #ccc; }
-.link-item:hover .link-icon { background: rgba(0, 212, 255, 0.3); transform: translateY(-5px); }
+.link-icon { width: 38px; height: 38px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 12px; margin-bottom: 5px; object-fit: contain; }
+.link-item span { font-size: 0.7rem; color: #ccc; text-align: center; }
 
-/* 搜尋框 */
-.center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 40px; padding-top: 10vh; }
-.search-logo { width: 260px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); }
-.custom-search-input { width: 100%; padding: 15px 25px; font-size: 1.2rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.9); outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+/* 搜尋框居中優化 */
+.center-panel { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding-bottom: 5vh; /* 稍微往上提一點 */
+}
 
-/* 音樂播放器樣式 (修正遮擋問題) */
-.music-btn-toggle { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 212, 255, 0.8); border: none; color: white; padding: 10px 25px; border-radius: 25px; cursor: pointer; z-index: 1000; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-#music-bar { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); width: 550px; height: 80px; background: rgba(15, 15, 15, 0.9); backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; display: flex; align-items: center; padding: 0 35px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
+/* 音樂播放器：修正 z-index 確保不被擋住 */
+.music-btn-toggle { 
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+    background: rgba(0, 212, 255, 0.8); border: none; color: white; 
+    padding: 10px 25px; border-radius: 25px; cursor: pointer; 
+    z-index: 2000; font-weight: bold; transition: 0.3s; 
+}
+#music-bar { 
+    position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%); 
+    width: 500px; height: 80px; background: rgba(15, 15, 15, 0.95); 
+    backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; 
+    display: flex; align-items: center; padding: 0 30px; 
+    transition: 0.4s ease-out; z-index: 1999; 
+}
 #music-bar.active { bottom: 0; }
-.music-info { flex: 1; }
-.music-controls button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin: 0 10px; }
-#yt-audio-player { position: absolute; left: -9999px; }
-
-/* 影片清單與彈窗  */
-.video-item { padding: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; }
-#video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; }
-.modal-content { position: relative; width: 85%; aspect-ratio: 16/9; }
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
