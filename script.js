@@ -1,17 +1,16 @@
-// --- 1. 時間與日期功能 ---
+// --- 1. 時間功能 ---
 function updateTime() {
     const clockEl = document.getElementById('clock');
     const dateEl = document.getElementById('date');
-    if (!clockEl || !dateEl) return;
-
-    const now = new Date();
-    clockEl.innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
-    dateEl.innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
+    if (clockEl && dateEl) {
+        const now = new Date();
+        clockEl.innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
+        dateEl.innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
+    }
 }
-setInterval(updateTime, 1000);
-updateTime();
+setInterval(updateTime, 1000); updateTime();
 
-// --- 2. 常用網站生成 (修正排版歪掉的問題) ---
+// --- 2. 常用網站生成 (優化：增加 null 檢查) ---
 const myLinks = [
     { name: 'YouTube', url: 'https://www.youtube.com' },
     { name: 'Twitch', url: 'https://www.twitch.tv' },
@@ -27,7 +26,7 @@ const myLinks = [
 
 const linksGrid = document.getElementById('links-grid');
 if (linksGrid) {
-    linksGrid.innerHTML = ''; // 清空舊內容防止排版重疊
+    linksGrid.innerHTML = '';
     myLinks.forEach(link => {
         const domain = new URL(link.url).hostname;
         const iconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
@@ -39,62 +38,46 @@ if (linksGrid) {
     });
 }
 
-// --- 3. 自動天氣圖示 ---
-async function getRealTimeWeather() {
-    try {
-        const response = await fetch('https://www.7timer.info/bin/astro.php?lon=121.2&lat=24.9&ac=0&unit=metric&output=json');
-        const data = await response.json();
-        const temp = data.dataseries[0].temp2m;
-        const weatherType = data.dataseries[0].prec_type; 
-        const sky = data.dataseries[0].cloudcover; 
-
-        let emoji = "☀️";
-        if (weatherType !== "none") emoji = "🌧️"; 
-        else if (sky > 5) emoji = "☁️";
-        else if (sky > 2) emoji = "⛅";
-
-        const weatherEl = document.getElementById('weather');
-        if (weatherEl) weatherEl.innerText = `桃園市 ${temp}°C ${emoji}`;
-    } catch (error) {
-        console.error("天氣獲取失敗", error);
-    }
-}
-getRealTimeWeather();
-
-// --- 4. 音樂播放器邏輯 (修正無法播放問題) ---
+// --- 3. 音樂播放器邏輯 (核心修復) ---
 let player;
-const playlist = ['C-CYwNz3z8w', '8Cm-7oCq9HA', 'BI9Ue6JwJic', 'OSeSYGiDf9w', 'kqj7b59D85Y'];
+const playlist = ['C-CYwNz3z8w', '8Cm-7oCq9HA', 'BI9Ue6JwJic', 'OSeSYGiDf9w', 'kqj7b59D85Y']; 
 let currentTrack = 0;
-let isApiReady = false;
+let playerReady = false; // 新增：用來判斷 player 是否準備好
 
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('yt-audio-player', {
-        height: '0',
-        width: '0',
+        height: '0', width: '0',
         videoId: playlist[currentTrack],
-        playerVars: { 
-            'autoplay': 0, // 初始設為0，等用戶點擊按鈕再播
-            'controls': 0,
-            'disablekb': 1
-        },
+        playerVars: { 'autoplay': 1, 'controls': 0 },
         events: {
             'onReady': (e) => { 
-                isApiReady = true;
+                playerReady = true; // 標記為已就緒
                 e.target.setVolume(50); 
-                document.getElementById('music-title').innerText = "音樂已就緒";
+                document.getElementById('music-title').innerText = "音樂已就緒，請點擊播放"; 
             },
-            'onStateChange': (e) => { 
-                if (e.data === YT.PlayerState.ENDED) nextMusic(); 
-            }
+            'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextMusic(); }
         }
     });
 }
 
+// 統一的播放/暫停控制函式 (避免直接在 HTML 讀取 player 物件)
+function playMusic() {
+    if (playerReady && player) {
+        player.playVideo();
+        document.getElementById('music-title').innerText = "BGM 播放中...";
+    } else {
+        console.warn("播放器尚未準備好");
+    }
+}
+
+function pauseMusic() {
+    if (playerReady && player) player.pauseVideo();
+}
+
 function nextMusic() {
-    currentTrack = (currentTrack + 1) % playlist.length;
-    if (player && isApiReady) {
+    if (playerReady && player) {
+        currentTrack = (currentTrack + 1) % playlist.length;
         player.loadVideoById(playlist[currentTrack]);
-        document.getElementById('music-title').innerText = "正在播放新曲目...";
     }
 }
 
@@ -108,18 +91,14 @@ function toggleMusicBar() {
     if (bar.classList.contains('active')) {
         btn.innerText = "❌ 關閉面板";
         btn.style.bottom = "90px";
-        // 關鍵：在用戶點擊開啟面板時，手動觸發播放
-        if (player && isApiReady) {
-            player.playVideo();
-            document.getElementById('music-title').innerText = "BGM 播放中...";
-        }
+        playMusic(); // 開啟時自動嘗試播放
     } else {
         btn.innerText = "🎵 播放音樂";
         btn.style.bottom = "30px";
     }
 }
 
-// --- 5. 推薦影片彈窗 ---
+// --- 4. 推薦影片彈窗 ---
 function playVideo(id) {
     const modal = document.getElementById('video-modal');
     const iframe = document.getElementById('video-player');
@@ -128,7 +107,6 @@ function playVideo(id) {
         modal.style.display = 'flex';
     }
 }
-
 function closeVideo() {
     const modal = document.getElementById('video-modal');
     const iframe = document.getElementById('video-player');
