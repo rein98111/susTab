@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sus Tab</title>
+<style>
+    /* --- CSS 保持原樣，僅微調 weather 顏色 --- */
+    body, html { margin: 0; padding: 0; height: 100%; color: white; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
+    #bg-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; object-fit: cover; filter: brightness(0.65); top: 0px; }
+    .main-container { display: flex; justify-content: space-between; align-items: flex-start; height: 100vh; padding: 30px 40px; box-sizing: border-box; }
+    .side-panel { width: 290px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 25px; height: 85vh; display: flex; flex-direction: column; margin-top: 10px; }
+    #clock { font-size: 3.5rem; font-weight: bold; }
+    #date { font-size: 1.2rem; color: #ddd; margin-bottom: 8px; }
+    #weather { font-size: 1.2rem; color: #00d4ff; margin-bottom: 25px; font-weight: bold; }
+    .changelog { height: 35%; overflow-y: auto; margin-bottom: 20px; }
+    .changelog h3 { font-size: 1.3rem; margin-top: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; }
+    .changelog ul { padding-left: 20px; font-size: 1.05rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
+    .quick-links { flex-grow: 1; display: flex; flex-direction: column; }
+    .quick-links h3 { font-size: 1.3rem; margin-bottom: 10px; }
+    .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .link-item { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 10px; text-align: center; text-decoration: none; color: white; font-size: 0.9rem; transition: 0.3s; border: 1px solid transparent; }
+    .link-item:hover { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(0, 212, 255, 0.5); transform: scale(1.05); }
+    .center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 40px; padding-top: 10vh; }
+    .search-logo { width: 260px; margin-bottom: 30px; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5)); transition: 0.3s ease; }
+    .search-logo:hover { transform: scale(1.03); }
+    .search-box-container { width: 100%; max-width: 620px; }
+    .custom-search-input { width: 100%; padding: 15px 25px; font-size: 1.2rem; border: none; border-radius: 30px; background: rgba(255, 255, 255, 0.9); color: #333; outline: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); transition: 0.3s; }
+    .custom-search-input:focus { background: #fff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+    .video-list-container { overflow-y: auto; flex-grow: 1; }
+    .video-item { padding: 10px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; cursor: pointer; transition: 0.3s; }
+    .video-item:hover { background: rgba(255, 255, 255, 0.15); }
+    .video-item img { width: 100%; border-radius: 8px; margin-bottom: 8px; }
+    .video-title { font-size: 0.88rem; line-height: 1.4; height: 2.8em; overflow: hidden; }
+    #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; }
+    .modal-content { position: relative; width: 85%; max-width: 1000px; aspect-ratio: 16/9; }
+    .close-btn { position: absolute; top: -45px; right: 0; font-size: 35px; cursor: pointer; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+    <video autoplay muted loop id="bg-video"><source src="Video/loopmita.mp4" type="video/mp4"></video>
+
+    <div class="main-container">
+        <div class="side-panel">
+            <div id="clock">00:00:00</div>
+            <div id="date">載入中...</div>
+            <div id="weather">正在獲取氣溫...</div>
+            
+            <div class="changelog">
+                <h3>更新日誌</h3>
+                <ul>
+                    <li>實現氣溫自動抓取功能</li>
+                    <li>新增常用網站快捷鍵</li>
+                    <li>優化搜尋框即時響應</li>
+                </ul>
+            </div>
+
+            <div class="quick-links">
+                <h3>常用網站</h3>
+                <div class="links-grid">
+                    <a href="https://www.youtube.com" class="link-item">YouTube</a>
+                    <a href="https://www.twitch.tv/" class="link-item">Twitch</a>
+                    <a href="https://github.com" class="link-item">GitHub</a>
+                    <a href="https://www.pixiv.net/" class="link-item">Pixiv</a>
+                    <a href="https://gemini.google.com/app" class="link-item">Gemini</a>
+                    <a href="https://ani.gamer.com.tw/" class="link-item">Anime</a>
+                    <a href="https://www.threads.com/?hl=zh-tw" class="link-item">Threads</a>
+                    <a href="https://sites.google.com/view/osufries" class="link-item">susFries</a>
+                    <a href="https://osu.ppy.sh" class="link-item">osu!</a>
+                    <a href="https://www.bilibili.com/" class="link-item">Bilibili</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <img src="images/susFries.png" alt="Logo" class="search-logo">
+            <div class="search-box-container">
+                <form action="https://www.google.com/search" method="GET">
+                    <input type="text" name="q" class="custom-search-input" placeholder="在這裡搜尋 Google..." autocomplete="off">
+                </form>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <h3>推薦影片</h3>
+            <div class="video-list-container" id="yt-list">
+                <div class="video-item" onclick="playVideo('OTVPmjPKafw')">
+                    <img src="https://img.youtube.com/vi/OTVPmjPKafw/mqdefault.jpg">
+                    <div class="video-title">Keyboard + Mouse ASMR Sounds</div>
+                </div>
+                <div class="video-item" onclick="playVideo('3MTOKXjfdBU')">
+                    <img src="https://img.youtube.com/vi/3MTOKXjfdBU/mqdefault.jpg">
+                    <div class="video-title">6位數亞太盃2026 Tryout精華</div>
+                </div>
+                <div class="video-item" onclick="playVideo('NT_5y_iP0q8')">
+                    <img src="https://img.youtube.com/vi/NT_5y_iP0q8/mqdefault.jpg">
+                    <div class="video-title">bedtwL | Minecraft Trailer</div>
+                </div>
+                <div class="video-item" onclick="playVideo('BlQPjLFcwDM')">
+                    <img src="https://img.youtube.com/vi/BlQPjLFcwDM/mqdefault.jpg">
+                    <div class="video-title">【經過一年的對比】Ado - Show | osu!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="video-modal" onclick="closeVideo()">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <iframe id="video-player" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 更新時間
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
+            document.getElementById('date').innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' });
+        }
+        setInterval(updateTime, 1000); 
+        updateTime();
+
+        // 【新增】自動抓取氣溫功能
+        async function getRealTimeWeather() {
+            try {
+                // 使用公開免 key 的 7-Timer API (定位在桃園經緯度約 24.9, 121.2)
+                const response = await fetch('https://www.7timer.info/bin/astro.php?lon=121.2&lat=24.9&ac=0&unit=metric&output=json');
+                const data = await response.json();
+                
+                // 抓取最接近現在時間點的氣溫
+                const temp = data.dataseries[0].temp2m;
+                
+                // 更新畫面
+                document.getElementById('weather').innerText = `桃園市 ${temp}°C ☁️`;
+            } catch (error) {
+                console.error('氣溫抓取失敗:', error);
+                document.getElementById('weather').innerText = "桃園市 20°C (讀取失敗)";
+            }
+        }
+        
+        // 頁面載入時執行一次，之後每 30 分鐘更新一次
+        getRealTimeWeather();
+        setInterval(getRealTimeWeather, 1800000);
+
+        function playVideo(id) {
+            document.getElementById('video-player').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+            document.getElementById('video-modal').style.display = 'flex';
+        }
+
+        function closeVideo() {
+            document.getElementById('video-modal').style.display = 'none';
+            document.getElementById('video-player').src = '';
+        }
+    </script>
+</body>
+</html>
